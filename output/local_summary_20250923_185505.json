@@ -1,0 +1,30 @@
+{
+  "coherence": {
+    "status": "completed",
+    "type": "<class 'dict'>"
+  },
+  "fluency": {
+    "status": "completed",
+    "type": "<class 'dict'>"
+  },
+  "groundedness": {
+    "status": "completed",
+    "type": "<class 'dict'>"
+  },
+  "relevance": {
+    "status": "completed",
+    "type": "<class 'dict'>"
+  },
+  "retrieval": {
+    "status": "completed",
+    "type": "<class 'dict'>"
+  },
+  "intent_resolution": {
+    "status": "completed",
+    "type": "<class 'dict'>"
+  },
+  "task_adherence": {
+    "status": "completed",
+    "type": "<class 'dict'>"
+  }
+}

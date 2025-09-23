@@ -362,7 +362,7 @@ class FoundryEvaluation:
 
     def save_results(self, results: List[Dict], category: str, timestamp: str) -> str:
         """Save evaluation results to JSONL file."""
-        output_dir = "evaluation_results"
+        output_dir = "output"
         os.makedirs(output_dir, exist_ok=True)
         
         output_file = f"{output_dir}/foundry_{category.lower().replace(' & ', '_').replace(' ', '_')}_results_{timestamp}.jsonl"
@@ -426,7 +426,7 @@ def main():
         results = evaluator.run_comprehensive_evaluation()
         
         print(f"\n✅ All evaluations completed successfully!")
-        print(f"📁 Check the 'evaluation_results' directory for category-specific results.")
+        print(f"📁 Check the 'output' directory for category-specific results.")
         
         return 0
         

@@ -1,0 +1,18 @@
+{
+  "deployment_status": "success",
+  "evaluators_deployed": [
+    "groundedness",
+    "relevance",
+    "coherence",
+    "fluency",
+    "retrieval",
+    "intent_resolution",
+    "task_adherence"
+  ],
+  "azure_project": {
+    "subscription_id": "d201ebeb-c470-4a6f-82d5-c2f95bb0dc1e",
+    "resource_group_name": "ai-evals-rg",
+    "project_name": "ai-evals-project"
+  },
+  "total_evaluators": 7
+}
