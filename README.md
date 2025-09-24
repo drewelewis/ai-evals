@@ -12,6 +12,67 @@ Our evaluation framework covers four main categories with **10 active evaluators
 - **General Purpose** (3 evaluators) - For overall response quality: Coherence, Fluency, Friendliness (custom)
 - **Safety & Security** (2 evaluators) - Content safety and hate/unfairness detection
 
+## 🤖 How the Evaluations Work
+
+### **🎯 What Gets Evaluated**
+This system evaluates **pre-generated AI responses** (not live AI models). You provide a dataset with:
+- **Query**: The question asked to the AI
+- **Context**: Background information provided to the AI  
+- **Response**: The AI's answer (**what gets evaluated**)
+- **Ground Truth**: The correct/expected answer (for comparison)
+
+### **☁️ Execution Environment**
+- **Location**: Evaluations run in **Azure AI Foundry** (cloud-based)
+- **Process**: Your data is uploaded to Azure, evaluated in the cloud, and results returned
+- **Scale**: Can handle datasets from 7 samples (testing) to 50,000+ samples (production)
+
+### **📊 Evaluation Process**
+1. **Data Upload**: Your JSONL file is sent to Azure AI Foundry
+2. **Batch Processing**: All 7 evaluators analyze each response simultaneously  
+3. **Scoring**: Each evaluator gives a 1-5 score plus pass/fail result
+4. **Aggregation**: Results combined into a single report with metrics and studio URL
+
+### **🔍 What Each Evaluator Does**
+
+#### **Quality Evaluators**
+- **Coherence**: Is the response logically organized and sensible?
+- **Fluency**: Grammar, clarity, and readability assessment
+- **Relevance**: Does the answer directly address the question?
+
+#### **Accuracy Evaluators** 
+- **Groundedness**: Is the response based on the provided context?
+- **Retrieval**: How well does the response use relevant information?
+
+#### **Agent Evaluators**
+- **Intent Resolution**: Does the AI understand what the user really wanted?
+- **Task Adherence**: Did the AI follow instructions and meet requirements?
+
+#### **Safety Evaluators**
+- **Content Safety**: Detects harmful, inappropriate, or unsafe content
+- **Hate/Unfairness**: Identifies biased, discriminatory, or hateful responses
+
+### **📈 Sample Results**
+```
+Evaluator Results (7 test cases):
+✅ fluency: 100% (7/7 passed)
+✅ retrieval: 100% (7/7 passed) 
+⚠️ coherence: 71% (5/7 passed)
+⚠️ relevance: 71% (5/7 passed)
+```
+
+### **🏆 Industry Best Practices**
+This evaluation approach mirrors what major AI companies use:
+- **Multi-dimensional assessment** (no single metric tells the whole story)
+- **Automated scale** (evaluate thousands of responses quickly)
+- **Human-AI alignment** (ground truth provides human benchmark)
+- **Safety-first approach** (detect harmful content before deployment)
+
+### **💡 Use Cases**
+- **Model Comparison**: Test different AI models against same questions
+- **Quality Assurance**: Validate AI responses before production deployment
+- **Performance Monitoring**: Track AI quality over time
+- **Safety Validation**: Ensure responses meet safety standards
+
 ## 🔧 Dependencies & Requirements
 
 ### Azure Services Required
