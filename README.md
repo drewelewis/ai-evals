@@ -488,6 +488,40 @@ pip list | findstr azure
 - Verify write permissions
 - Look for error messages in console output
 
+**5. 403 Forbidden Errors in Azure AI Studio** ⚠️
+> **Common Issue**: If evaluations worked yesterday but fail today with 403 errors, this is often due to overnight **network access policies** being disabled in managed learning environments.
+
+**Symptoms:**
+```
+Error: Request failed with status code 403
+Trace ID: xxxxx-xxxx-xxxx-xxxx
+```
+
+**Solution:**
+```bash
+# Re-enable public network access on storage account
+az storage account update \
+  --name staievalshub249798735043 \
+  --resource-group ai-evals-rg \
+  --public-network-access Enabled
+
+# Verify it's enabled
+az storage account show \
+  --name staievalshub249798735043 \
+  --resource-group ai-evals-rg \
+  --query "publicNetworkAccess"
+```
+
+**Why This Happens:**
+- **Managed learning environments** often disable public network access overnight for security compliance
+- **Azure policies** may automatically restrict network access during off-hours
+- **Security governance** tools can override network settings periodically
+
+**Prevention:**
+- **Document this behavior** for your team
+- **Set up monitoring** to alert when network access is disabled
+- **Consider using private endpoints** if available in your environment
+
 #### Performance Tips
 
 **1. Faster Development Iterations**
