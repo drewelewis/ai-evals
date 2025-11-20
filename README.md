@@ -597,11 +597,31 @@ python run_evaluation_with_cloud_upload.py
 - Azure AI Foundry project configured
 - Proper Azure permissions for cloud deployment
 
-## 🔍 RAG & Retrieval Evaluators (3)
+## 📚 Azure AI Foundry Built-in Evaluators Reference
+
+Azure AI Foundry provides a comprehensive suite of **built-in evaluators** across multiple categories. This section documents all available evaluators, including those currently used in this project and additional options for future expansion.
+
+### Evaluator Categories Overview
+
+| Category | Evaluators in This Project | Additional Available Evaluators |
+|----------|---------------------------|----------------------------------|
+| **General Purpose** | Coherence, Fluency | - |
+| **Textual Similarity** | - | Similarity, F1Score, RougeScore, GleuScore, BleuScore, MeteorScore |
+| **RAG & Retrieval** | Groundedness, Relevance, Retrieval | GroundednessProEvaluator, DocumentRetrievalEvaluator, ResponseCompletenessEvaluator |
+| **Agentic** | IntentResolution, TaskAdherence | - |
+| **Risk & Safety** | HateUnfairness, ContentSafety (composite) | Violence, Sexual, SelfHarm, IndirectAttack, ProtectedMaterial, UngroundedAttributes, CodeVulnerability |
+| **Composite** | QAEvaluator (not active), ContentSafetyEvaluator | - |
+| **Azure OpenAI Graders** | - | AzureOpenAILabelGrader, AzureOpenAIStringCheckGrader, AzureOpenAITextSimilarityGrader, AzureOpenAIGrader |
+
+---
+
+## 🔍 RAG & Retrieval Evaluators
 
 These evaluators assess how well the system retrieves and uses information from knowledge bases.
 
-### Retrieval ✅
+### Currently Used in This Project
+
+#### Retrieval ✅
 - **Purpose**: Measures textual quality and relevance of retrieved context chunks for addressing the query (LLM-based, no ground truth required)
 - **Implementation**: `RetrievalEvaluator` in `run_evaluation_local.py`
 - **Scoring**: 1-5 scale with threshold=3
@@ -612,71 +632,235 @@ These evaluators assess how well the system retrieves and uses information from 
   - Uses LLM for quality assessment vs. classical IR metrics
 - **Use Case**: Evaluating RAG retrieval component effectiveness
 
-### Groundedness ✅
+#### Groundedness ✅
 - **Purpose**: Measures how consistent the response is with respect to the retrieved context
 - **Implementation**: `GroundednessEvaluator` in `run_evaluation_local.py`
 - **Scoring**: 1-5 scale (higher = better grounded in context)
 - **Example**: Ensures architecture recommendations are based on provided reference material
+- **Input Requirements**: `query`, `response`, `context`
 
-### Relevance ✅
+#### Relevance ✅
 - **Purpose**: Measures how relevant the response is with respect to the query
 - **Implementation**: `RelevanceEvaluator` in `run_evaluation_local.py`
 - **Scoring**: 1-5 scale (higher = more relevant)
 - **Example**: Ensures responses directly address the architecture questions asked
+- **Input Requirements**: `query`, `response`
 
-## 🤖 Agents Evaluators (2)
+### Additional Available RAG Evaluators
 
-These evaluators assess agent-specific capabilities and behaviors.
+#### GroundednessProEvaluator
+- **Purpose**: Advanced groundedness evaluation powered by Azure AI Content Safety
+- **Scoring**: 1-5 scale with enhanced accuracy
+- **Key Features**:
+  - Uses Azure AI Content Safety backend for more precise evaluation
+  - Better detection of subtle hallucinations
+  - Requires `azure_ai_project` configuration instead of `model_config`
+- **Status**: Preview feature
+- **Input Requirements**: `query`, `response`, `context`
 
-### Intent Resolution ✅
+#### DocumentRetrievalEvaluator
+- **Purpose**: Evaluates retrieval quality using classical information retrieval metrics
+- **Scoring**: Precision-based metrics
+- **Key Features**:
+  - Requires ground truth for comparison
+  - Uses traditional IR metrics (not LLM-based)
+  - Good for benchmark comparisons
+- **Input Requirements**: `query`, `context`, `ground_truth`
+
+#### ResponseCompletenessEvaluator
+- **Purpose**: Measures how completely the response addresses all aspects of the query
+- **Scoring**: 1-5 scale (higher = more complete)
+- **Key Features**:
+  - Checks if response covers all necessary points
+  - Requires ground truth for comparison
+  - Good for ensuring comprehensive answers
+- **Input Requirements**: `query`, `response`, `ground_truth`
+
+---
+
+## 🤖 Agentic Evaluators
+
+These evaluators assess agent-specific capabilities and behaviors, specifically designed for evaluating AI agents and their workflows.
+
+### Currently Used in This Project
+
+#### Intent Resolution ✅
 - **Purpose**: Measures how accurately the agent identifies and addresses user intentions
 - **Implementation**: `IntentResolutionEvaluator` in `run_evaluation_local.py`
 - **Scoring**: 1-5 scale (higher = better intent understanding)
+- **Key Features**:
+  - Evaluates if agent correctly interprets user goals
+  - Assesses understanding of implicit and explicit intents
+  - Supports agent message schema format
 - **Example**: Evaluates if the agent correctly understands what the user wants to achieve
-- **Note**: Experimental Azure AI evaluator
+- **Input Requirements**: Agent messages or conversation format
+- **Note**: Supports Foundry Agent Service message format
 
-### Task Adherence ✅
+#### Task Adherence ✅
 - **Purpose**: Measures how well the agent follows through on identified tasks
 - **Implementation**: `TaskAdherenceEvaluator` in `run_evaluation_local.py`
 - **Scoring**: 1-5 scale (higher = better task completion)
+- **Key Features**:
+  - Checks if agent completes assigned tasks
+  - Evaluates adherence to system message instructions
+  - Assesses consistency across multi-step workflows
 - **Example**: Checks if the agent provides actionable solutions for architecture problems
-- **Note**: Experimental Azure AI evaluator
+- **Input Requirements**: Agent messages or conversation format
+- **Note**: Supports Foundry Agent Service message format
 
-## 🎯 General Purpose and Custom Evaluators (3)
+### Additional Available Agentic Evaluators
 
-These evaluators assess overall response quality and language characteristics.
+#### ToolCallAccuracyEvaluator
+- **Purpose**: Measures whether the agent made correct function tool calls in response to user requests
+- **Scoring**: 1-5 scale (higher = better tool selection)
+- **Key Features**:
+  - Evaluates if agent selects appropriate tools
+  - Checks correct tool parameters
+  - Assesses tool call sequencing
+- **Use Case**: Evaluating agents that use external tools/functions
+- **Input Requirements**: Agent messages with tool call information
+- **Note**: Requires agent message schema format
 
-### Coherence ✅
+---
+
+## 🎯 General Purpose Evaluators
+
+These evaluators assess overall response quality and language characteristics, applicable to most AI applications.
+
+### Currently Used in This Project
+
+#### Coherence ✅
 - **Purpose**: Measures logical consistency and flow of responses
 - **Implementation**: `CoherenceEvaluator` in `run_evaluation_local.py`
 - **Scoring**: 1-5 scale (higher = more coherent)
+- **Key Features**:
+  - Evaluates logical structure and organization
+  - Checks for consistent argumentation
+  - Assesses overall response structure
+  - Supports conversation mode (multi-turn)
 - **Example**: Ensures architecture recommendations follow logical reasoning
+- **Input Requirements**: `query`, `response`
 
-### Fluency ✅
+#### Fluency ✅
 - **Purpose**: Measures natural language quality and readability
 - **Implementation**: `FluencyEvaluator` in `run_evaluation_local.py`
 - **Scoring**: 1-5 scale (higher = more fluent)
+- **Key Features**:
+  - Evaluates grammar and syntax
+  - Assesses readability and clarity
+  - Checks natural language flow
+  - Supports conversation mode (multi-turn)
 - **Example**: Ensures architecture advice is clearly written and grammatically correct
+- **Input Requirements**: `query`, `response`
 
-### Friendliness ✅ (Custom Evaluator)
+#### Friendliness ✅ (Custom Evaluator)
 - **Purpose**: Measures conversational tone and helpfulness
 - **Implementation**: `FriendlinessEvaluator` (custom evaluator) in `friendliness/friendliness.py`
 - **Scoring**: 1-5 scale (higher = more friendly and helpful)
+- **Key Features**:
+  - Custom-built evaluator using Prompty template
+  - Evaluates tone and approachability
+  - Assesses helpfulness and professionalism
 - **Example**: Ensures responses maintain a professional and helpful tone
 - **Template**: Uses `friendliness.prompty` for structured evaluation
 
-## 🛡️ Safety & Security Evaluators (2)
+### Composite General Purpose Evaluators
 
-These evaluators detect potentially harmful or unsafe content using Azure's content safety services.
+#### QAEvaluator (Question-Answering Composite)
+- **Purpose**: Combines multiple quality evaluators for comprehensive Q&A assessment
+- **Included Evaluators**: Groundedness, Relevance, Coherence, Fluency, Similarity, F1Score
+- **Scoring**: Provides individual scores for each component
+- **Key Features**:
+  - Single evaluator call returns multiple metrics
+  - Comprehensive quality assessment
+  - Ideal for Q&A applications
+- **Input Requirements**: `query`, `response`, `context`, `ground_truth`
+- **Note**: Requires ground truth for similarity metrics
 
-### Hate/Unfairness ✅
+---
+
+## 📊 Textual Similarity Evaluators
+
+These evaluators compare generated responses against ground truth using various similarity metrics. All require ground truth for comparison.
+
+### Available Evaluators (Not Currently Used)
+
+#### SimilarityEvaluator
+- **Purpose**: Measures semantic similarity between response and ground truth using embeddings
+- **Scoring**: 1-5 scale (higher = more similar)
+- **Key Features**:
+  - Uses embeddings for semantic comparison
+  - AI-assisted evaluation
+  - Good for paraphrase detection
+- **Input Requirements**: `query`, `response`, `ground_truth`
+
+#### F1ScoreEvaluator
+- **Purpose**: Calculates F1 score between response and ground truth
+- **Scoring**: 0-1 scale (1 = perfect match)
+- **Key Features**:
+  - Token-level comparison
+  - Balances precision and recall
+  - Classical NLP metric
+- **Input Requirements**: `response`, `ground_truth`
+
+#### RougeScoreEvaluator
+- **Purpose**: ROUGE (Recall-Oriented Understudy for Gisting Evaluation) score
+- **Scoring**: 0-1 scale for multiple ROUGE variants
+- **Key Features**:
+  - Measures n-gram overlap
+  - Standard for summarization tasks
+  - Multiple variants (ROUGE-1, ROUGE-2, ROUGE-L)
+- **Input Requirements**: `response`, `ground_truth`
+
+#### GleuScoreEvaluator
+- **Purpose**: GLEU (Google-BLEU) score for translation and generation tasks
+- **Scoring**: 0-1 scale (higher = better match)
+- **Key Features**:
+  - Modified BLEU for shorter texts
+  - Good for sentence-level evaluation
+  - Less sensitive to length variations
+- **Input Requirements**: `response`, `ground_truth`
+
+#### BleuScoreEvaluator
+- **Purpose**: BLEU (Bilingual Evaluation Understudy) score for machine translation
+- **Scoring**: 0-1 scale (higher = better match)
+- **Key Features**:
+  - Standard metric for translation tasks
+  - N-gram precision-based
+  - Includes brevity penalty
+- **Input Requirements**: `response`, `ground_truth`
+
+#### MeteorScoreEvaluator
+- **Purpose**: METEOR (Metric for Evaluation of Translation with Explicit ORdering) score
+- **Scoring**: 0-1 scale (higher = better match)
+- **Key Features**:
+  - Considers synonyms and stemming
+  - More flexible than BLEU
+  - Better correlation with human judgment
+- **Input Requirements**: `response`, `ground_truth`
+
+---
+
+## 🛡️ Risk & Safety Evaluators
+
+These evaluators detect potentially harmful or unsafe content using Azure AI Content Safety services.
+
+### Currently Used in This Project
+
+#### HateUnfairnessEvaluator ✅
 - **Purpose**: Identifies biased, discriminatory, or hateful content
 - **Implementation**: `HateUnfairnessEvaluator` in `run_evaluation_local.py`
 - **Scoring**: 0-7 scale (0-2 = safe, 3+ = unsafe)
 - **Threshold**: 3 (scores ≥3 are flagged as "fail")
+- **Key Features**:
+  - Detects discriminatory language
+  - Identifies bias and stereotypes
+  - Supports conversation and image inputs
+  - Powered by Azure AI Content Safety
 - **Output**: Provides detailed reasoning for scores
+- **Input Requirements**: `query`, `response`
 
-### Content Safety (Composite) ✅
+#### ContentSafetyEvaluator ✅ (Composite)
 - **Purpose**: Comprehensive assessment of various safety concerns in a single evaluator
 - **Implementation**: `ContentSafetyEvaluator` in `run_evaluation_local.py`
 - **Categories Covered**:
@@ -686,7 +870,198 @@ These evaluators detect potentially harmful or unsafe content using Azure's cont
   - **Self-Harm**: Content promoting or describing self-harm
 - **Scoring**: 0-7 scale per category (0-2 = safe, 3+ = unsafe)
 - **Threshold**: 3 for all categories
+- **Key Features**:
+  - Single evaluator returns multiple safety metrics
+  - Powered by Azure AI Content Safety
+  - Supports conversation and image inputs
 - **Output**: Detailed breakdown of all safety categories with individual scores and reasons
+- **Input Requirements**: `query`, `response`
+
+### Additional Available Safety Evaluators
+
+#### ViolenceEvaluator
+- **Purpose**: Detects violent content or content that incites violence
+- **Scoring**: 0-7 scale (0-2 = safe, 3+ = unsafe)
+- **Key Features**:
+  - Standalone violence detection
+  - Supports text and image inputs
+  - More detailed than composite ContentSafetyEvaluator
+- **Input Requirements**: `query`, `response`
+- **Note**: Also included in ContentSafetyEvaluator composite
+
+#### SexualEvaluator
+- **Purpose**: Detects inappropriate sexual content
+- **Scoring**: 0-7 scale (0-2 = safe, 3+ = unsafe)
+- **Key Features**:
+  - Standalone sexual content detection
+  - Supports text and image inputs
+  - More detailed than composite ContentSafetyEvaluator
+- **Input Requirements**: `query`, `response`
+- **Note**: Also included in ContentSafetyEvaluator composite
+
+#### SelfHarmEvaluator
+- **Purpose**: Detects content promoting or describing self-harm
+- **Scoring**: 0-7 scale (0-2 = safe, 3+ = unsafe)
+- **Key Features**:
+  - Standalone self-harm detection
+  - Supports text and image inputs
+  - Critical for mental health safety
+- **Input Requirements**: `query`, `response`
+- **Note**: Also included in ContentSafetyEvaluator composite
+
+#### IndirectAttackEvaluator
+- **Purpose**: Detects indirect attacks, jailbreak attempts, and prompt injection
+- **Scoring**: Pass/Fail or 0-7 scale
+- **Key Features**:
+  - Identifies indirect prompt attacks
+  - Detects jailbreak attempts
+  - Assesses prompt injection vulnerabilities
+  - Supports conversation mode
+- **Input Requirements**: `conversation` (multi-turn format)
+- **Use Case**: Protecting against adversarial attacks
+
+#### ProtectedMaterialEvaluator
+- **Purpose**: Detects responses containing protected or copyrighted material
+- **Scoring**: Pass/Fail or 0-7 scale
+- **Key Features**:
+  - Identifies copyrighted content
+  - Detects protected material reproduction
+  - Supports text and image inputs
+- **Input Requirements**: `query`, `response`
+- **Use Case**: Copyright and IP compliance
+
+#### UngroundedAttributesEvaluator
+- **Purpose**: Detects false or unverified attributions in responses
+- **Scoring**: 0-7 scale or Pass/Fail
+- **Key Features**:
+  - Identifies fabricated facts
+  - Detects incorrect attributions
+  - Single-turn text only
+- **Input Requirements**: `query`, `response`
+- **Use Case**: Fact-checking and attribution accuracy
+
+#### CodeVulnerabilityEvaluator
+- **Purpose**: Detects security vulnerabilities in generated code
+- **Scoring**: Pass/Fail or severity levels
+- **Key Features**:
+  - Identifies common code vulnerabilities
+  - Security best practice validation
+  - Single-turn text only
+- **Input Requirements**: `query`, `response` (containing code)
+- **Use Case**: Secure code generation validation
+
+---
+
+## 🎓 Azure OpenAI Graders
+
+Flexible graders that allow custom evaluation criteria using Azure OpenAI models. These are advanced tools for creating specialized evaluations.
+
+### Available Graders (Not Currently Used)
+
+#### AzureOpenAILabelGrader
+- **Purpose**: Custom label-based grading with predefined categories
+- **Scoring**: User-defined labels/categories
+- **Key Features**:
+  - Define custom evaluation labels
+  - Classify responses into categories
+  - Supports conversation mode
+- **Use Case**: Custom classification tasks
+- **Input Requirements**: `conversation`, custom label definitions
+
+#### AzureOpenAIStringCheckGrader
+- **Purpose**: Check for presence or absence of specific strings/patterns
+- **Scoring**: Pass/Fail based on string matching
+- **Key Features**:
+  - Pattern matching evaluation
+  - Custom string validation
+  - Supports conversation mode
+- **Use Case**: Format validation, keyword checking
+- **Input Requirements**: `conversation`, string patterns
+
+#### AzureOpenAITextSimilarityGrader
+- **Purpose**: Custom semantic similarity evaluation
+- **Scoring**: User-defined similarity scale
+- **Key Features**:
+  - Flexible similarity assessment
+  - Requires ground truth
+  - Supports conversation mode
+- **Use Case**: Custom similarity benchmarks
+- **Input Requirements**: `conversation`, `ground_truth`
+
+#### AzureOpenAIGrader
+- **Purpose**: General-purpose custom grader with flexible criteria
+- **Scoring**: User-defined scoring system
+- **Key Features**:
+  - Fully customizable evaluation criteria
+  - Define your own prompts and rubrics
+  - Supports conversation mode
+- **Use Case**: Any custom evaluation scenario
+- **Input Requirements**: `conversation`, custom evaluation prompt
+
+---
+
+## 🔧 Evaluator Configuration Requirements
+
+### Model Configuration Setup
+
+Different evaluators have different configuration requirements:
+
+#### AI-Assisted Quality Evaluators
+**Require `model_config` with GPT model:**
+- Coherence, Fluency, Relevance, Groundedness, Retrieval
+- Intent Resolution, Task Adherence, Tool Call Accuracy
+- Similarity, Response Completeness
+
+**Recommended Models:**
+- `gpt-4o` (best performance, recommended)
+- `gpt-4o-mini` (cost-effective alternative to gpt-3.5-turbo)
+- `gpt-4`, `gpt-4-turbo` (good performance)
+
+**Example Configuration:**
+```python
+model_config = {
+    "azure_endpoint": os.getenv("AZURE_OPENAI_ENDPOINT"),
+    "api_key": os.getenv("AZURE_OPENAI_API_KEY"),
+    "azure_deployment": os.getenv("AZURE_OPENAI_DEPLOYMENT"),
+    "api_version": "2024-12-01-preview"
+}
+```
+
+#### Safety Evaluators & GroundednessProEvaluator
+**Require `azure_ai_project` configuration:**
+- All safety evaluators (Violence, Sexual, SelfHarm, HateUnfairness, etc.)
+- ContentSafetyEvaluator (composite)
+- GroundednessProEvaluator
+
+**Example Configuration:**
+```python
+azure_ai_project = {
+    "subscription_id": os.getenv("AZURE_SUBSCRIPTION_ID"),
+    "resource_group_name": os.getenv("AZURE_RESOURCE_GROUP"),
+    "project_name": os.getenv("AZURE_AI_FOUNDRY_PROJECT")
+}
+```
+
+#### NLP Metrics (No Configuration Required)
+**Classic NLP evaluators don't need model or project config:**
+- F1Score, RougeScore, GleuScore, BleuScore, MeteorScore
+
+### Conversation vs Single-Turn Support
+
+| Support Level | Evaluators |
+|--------------|------------|
+| **Conversation & Single-Turn (Text)** | Coherence, Fluency, Relevance, Groundedness, GroundednessPro, Retrieval, IntentResolution, TaskAdherence, ToolCallAccuracy, IndirectAttack, Azure OpenAI Graders |
+| **Conversation & Single-Turn (Text + Image)** | Violence, Sexual, SelfHarm, HateUnfairness, ProtectedMaterial, ContentSafety |
+| **Single-Turn Only (Text)** | Similarity, F1Score, RougeScore, GleuScore, BleuScore, MeteorScore, ResponseCompleteness, DocumentRetrieval, UngroundedAttributes, CodeVulnerability, QAEvaluator |
+
+### Ground Truth Requirements
+
+| Requires Ground Truth | Evaluators |
+|-----------------------|------------|
+| **Yes** | Similarity, F1Score, RougeScore, GleuScore, BleuScore, MeteorScore, DocumentRetrieval, ResponseCompleteness, QAEvaluator (partial), Azure OpenAI Text Similarity Grader |
+| **No** | All other evaluators |
+
+---
 
 ## 📊 Evaluation Data
 
